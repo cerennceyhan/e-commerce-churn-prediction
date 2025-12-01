@@ -1,0 +1,20 @@
+# Gereksizleri engelle
+__pycache__/
+*.py[cod]
+.env
+venv/
+
+# Tüm CSV dosyalarını engelle
+*.csv
+
+# AMA sample_dataset.csv dosyasını yükle (İstisna)
+!data/raw/sample_dataset.csv
+
+# Resimler ve gitkeep dosyaları yüklensin
+!outputs/*.png
+!data/processed/.gitkeep
+!outputs/.gitkeep
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
