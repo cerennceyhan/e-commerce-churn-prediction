@@ -8,4 +8,4 @@ imbalanced-learn>=0.11.0
 shap>=0.42.0
 anthropic>=0.18.0
 tqdm>=4.65.0
-selenium>=4.10.0
+selenium>=4.10.0python-dotenv>=1.0.0

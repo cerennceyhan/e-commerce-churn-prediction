@@ -11,6 +11,8 @@ import time
 from tqdm import tqdm
 import os
 
+from churn_prediction import paths
+
 class LLMFeatureExtractor:
     """
     Claude 4.5 Sonnet kullanarak ürün yorumlarından özellik çıkarma
@@ -150,7 +152,10 @@ class LLMFeatureExtractor:
             self.df_reviews['Ürün'] == product_name
         ].sort_values('parsed_date', ascending=False).head(max_comments)
         
-        return product_reviews['duzeltilmis_yorum'].tolist()
+        # 'duzeltilmis_yorum' (spell-corrected text) only exists in the private dataset;
+        # the public sample dataset just has the raw 'Yorum' column.
+        column = 'duzeltilmis_yorum' if 'duzeltilmis_yorum' in product_reviews.columns else 'Yorum'
+        return product_reviews[column].tolist()
     
     def create_llm_prompt(self, comments_list):
         """
@@ -419,48 +424,40 @@ SADECE YAYGIN SORUNLARI RAPORLA! Birkaç kişinin söylemesi SORUN DEĞİLDİR."
         return None
 
 
-# ============================================================================
-# KULLANIM ÖRNEĞİ
-# ============================================================================
-if __name__ == "__main__":
+def get_api_key():
+    """Read the Anthropic key from the environment (or a local .env file)."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(paths.PROJECT_ROOT / ".env")
+    except ImportError:
+        pass
+    key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("CLAUDE_API_KEY")
+    if not key:
+        raise SystemExit(
+            "ANTHROPIC_API_KEY is not set. Put it in a .env file (see .env.example) "
+            "or export it in your shell."
+        )
+    return key
+
+
+def main(max_products=None, delay=1.0):
     print("=" * 80)
     print("PHASE 2: LLM İLE ÖZELLİK MÜHENDİSLİĞİ")
     print("=" * 80)
-    
-    # API Key'i environment variable'dan al, yoksa kullanıcıdan iste
-    CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY')
-    if not CLAUDE_API_KEY:
-        print("\n⚠️ CLAUDE_API_KEY environment variable bulunamadı!")
-        print("Lütfen API key'inizi girin (veya CLAUDE_API_KEY environment variable'ını ayarlayın):")
-        CLAUDE_API_KEY = input("API Key: ").strip()
-    
-    # Proje kök dizinini bul
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(script_dir)
-    
-    # Dosya yollarını göreceli olarak oluştur
-    RAW_DATA = os.path.join(project_root, 'data', 'raw', 'sample_dataset.csv')
-    PHASE1_DATA = os.path.join(project_root, 'data', 'processed', 'base_metrics.csv')
-    TEMP_OUTPUT = os.path.join(project_root, 'data', 'processed', 'llm_results.csv')
-    FINAL_OUTPUT = os.path.join(project_root, 'data', 'processed', 'llm_extraction.csv')
-    
-    # 1. Sınıfı başlat
+
     extractor = LLMFeatureExtractor(
-        original_csv_path=RAW_DATA,
-        product_features_csv_path=PHASE1_DATA,
-        output_path=TEMP_OUTPUT,
-        api_key=CLAUDE_API_KEY
+        original_csv_path=str(paths.SAMPLE_DATASET),
+        product_features_csv_path=str(paths.BASE_METRICS),
+        output_path=str(paths.LLM_RESULTS),
+        api_key=get_api_key(),
     )
-    
-    # 2. LLM ile özellik çıkar
-    extractor.process_all_products(
-        max_products=None,  # Hepsini işle
-        delay=1.0
-    )
-    
-    # 3. Final dosyayı oluştur (Risk_Class ile)
-    df_final = extractor.finalize_and_save(FINAL_OUTPUT)
-    
+    extractor.process_all_products(max_products=max_products, delay=delay)
+    df_final = extractor.finalize_and_save(str(paths.LLM_EXTRACTION))
+
     print("\n" + "=" * 80)
     print("✅TAMAMLANDI!")
-    print("=" * 80)
+    return df_final
+
+
+if __name__ == "__main__":
+    main()

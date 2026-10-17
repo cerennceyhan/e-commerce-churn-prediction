@@ -1,0 +1,6 @@
+# Trendyol product URLs to scrape (one per line).
+# Only women's clothing products work: the selectors are written for that page layout.
+https://www.trendyol.com/genel-markalar/degaje-madonna-yaka-fitilli-triko-kazak-antrasit-p-792361992?boutiqueId=61&merchantId=390652
+https://www.trendyol.com/trend-alacati-stili/kadin-siyah-on-ve-arka-kruvaze-cizgili--kazak-alc-x7570-p-192327372?boutiqueId=678361&merchantId=968
+https://www.trendyol.com/modaspark/antrasit-bisiklet-yaka-oversize-kadin-triko-kazak-p-899638586?boutiqueId=61&merchantId=862923
+https://www.trendyol.com/juuri/kadin-siyah-asimetrik-kesim-onu-tki-parcali-aktilik-kumas-kazak-p-968604297?boutiqueId=61&merchantId=131266

@@ -12,9 +12,10 @@ import numpy as np
 from datetime import datetime
 import warnings
 import os
+from churn_prediction import paths
 warnings.filterwarnings('ignore')
 
-class LeakFreeProductPreparator:
+class ProductFeatureBuilder:
 
     
     def __init__(self, csv_path):
@@ -112,26 +113,16 @@ class LeakFreeProductPreparator:
         return self.product_features
 
 
-# ============================================================================
-# KULLANIM ÖRNEĞİ
-# ============================================================================
-if __name__ == "__main__":
-    
-    # Proje kök dizinini bul
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(script_dir)
-    
-    # Dosya yollarını göreceli olarak oluştur
-    input_path = os.path.join(project_root, 'data', 'raw', 'sample_dataset.csv')
-    output_path = os.path.join(project_root, 'data', 'processed', 'base_metrics.csv')
-    
-    preparator = LeakFreeProductPreparator(input_path)
-    
-    preparator.parse_turkish_dates()
-    preparator.create_product_features()
-    
-    df_phase1 = preparator.save_processed_data(output_path)
-    
- 
+def main(input_path=paths.SAMPLE_DATASET, output_path=paths.BASE_METRICS):
+    builder = ProductFeatureBuilder(str(input_path))
+    builder.parse_turkish_dates()
+    builder.create_product_features()
+    df = builder.save_processed_data(str(output_path))
+
     print("\n📌 SONRAKI ADIM:")
-    print("python llm_extraction.py")
+    print("python -m churn_prediction extract")
+    return df
+
+
+if __name__ == "__main__":
+    main()
